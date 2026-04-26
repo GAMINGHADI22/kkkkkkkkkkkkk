@@ -9,25 +9,31 @@ BOT_TOKEN = os.getenv("8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0", "8659260
 FAST_OPTS = {
     "quiet": True,
     "no_warnings": True,
-    "concurrent_fragment_downloads": 8,
-    "retries": 5,
-    "fragment_retries": 5,
-    "socket_timeout": 15,
+    "concurrent_fragment_downloads": 16,
+    "retries": 10,
+    "fragment_retries": 10,
+    "socket_timeout": 20,
+    "http_chunk_size": 10485760,
 }
 
+# 🔥 PREMIUM START UI
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🎬 Video Downloader Bot\n\n"
-        "📥 Send YouTube or TikTok video link\n"
-        "⚡ Fast Download Enabled\n\n"
-        "🔗 Send your link now!"
+        "╔══════════════════╗\n"
+        "   ⚡ PREMIUM DOWNLOADER\n"
+        "╚══════════════════╝\n\n"
+        "🎬 YouTube + TikTok supported\n"
+        "🚀 Ultra fast download\n"
+        "🗜 Auto compress enabled\n\n"
+        "🔗 Send your video link now!"
     )
 
+# 🔍 LINK HANDLER
 async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text.strip()
 
     if not ("youtube.com" in url or "youtu.be" in url or "tiktok.com" in url):
-        await update.message.reply_text("❌ YouTube/TikTok link পাঠাও")
+        await update.message.reply_text("❌ Send valid YouTube/TikTok link")
         return
 
     context.user_data["url"] = url
@@ -40,30 +46,44 @@ async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         title = data.get("title", "Video")
         thumbnail = data.get("thumbnail")
 
+        # 💎 PREMIUM BUTTON UI
         buttons = [
-            [InlineKeyboardButton("📺 1080p Full HD", callback_data="1080")],
-            [InlineKeyboardButton("📺 720p HD", callback_data="720")],
-            [InlineKeyboardButton("📱 360p", callback_data="360")],
-            [InlineKeyboardButton("🎵 MP3 Audio", callback_data="mp3")]
+            [
+                InlineKeyboardButton("💎 1080p HD", callback_data="1080"),
+                InlineKeyboardButton("⚡ 720p Fast", callback_data="720")
+            ],
+            [
+                InlineKeyboardButton("📱 360p Lite", callback_data="360"),
+                InlineKeyboardButton("🎧 MP3 Audio", callback_data="mp3")
+            ]
         ]
+
+        caption = (
+            "╭───────────────╮\n"
+            "   🎥 VIDEO READY\n"
+            "╰───────────────╯\n\n"
+            f"📌 {title}\n\n"
+            "👇 Choose quality:"
+        )
 
         await msg.delete()
 
         if thumbnail:
             await update.message.reply_photo(
                 photo=thumbnail,
-                caption=f"🎬 {title}\n\n👇 Select quality:",
+                caption=caption,
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
         else:
             await update.message.reply_text(
-                f"🎬 {title}\n\n👇 Select quality:",
+                caption,
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
 
-    except Exception as e:
+    except:
         await msg.edit_text("❌ Error loading video")
 
+# ⚙️ BUTTON HANDLER
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -71,7 +91,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = context.user_data.get("url")
     choice = query.data
 
-    msg = await query.message.reply_text("⏳ Processing...")
+    msg = await query.message.reply_text("🚀 Download starting...")
 
     try:
         os.makedirs("downloads", exist_ok=True)
@@ -102,15 +122,17 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             data = ydl.extract_info(url, download=True)
             file_path = ydl.prepare_filename(data)
 
+        # 🎧 AUDIO
         if choice == "mp3":
             file_path = file_path.replace(".webm", ".mp3").replace(".m4a", ".mp3")
             await msg.edit_text("📤 Sending audio...")
             with open(file_path, "rb") as audio:
                 await query.message.reply_audio(audio=audio)
+
+        # 🎬 VIDEO
         else:
             if os.path.getsize(file_path) > 45 * 1024 * 1024:
                 compressed = file_path.replace(".mp4", "_compressed.mp4")
-
                 await msg.edit_text("🗜 Compressing...")
 
                 subprocess.run([
@@ -134,6 +156,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await msg.edit_text("❌ Download failed")
 
+# 🚀 RUN
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
@@ -141,7 +164,7 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, link_handler))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("🔥 Bot Running...")
+    print("🔥 Premium Bot Running...")
     app.run_polling()
 
 if __name__ == "__main__":
