@@ -3,6 +3,7 @@ import subprocess
 import yt_dlp
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
+from telegram.constants import ChatAction
 
 BOT_TOKEN = os.getenv("8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0", "8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0")
 
@@ -16,20 +17,24 @@ FAST_OPTS = {
     "http_chunk_size": 10485760,
 }
 
-# 🔥 PREMIUM START UI
+# 🔥 START UI
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "╔══════════════════╗\n"
-        "   ⚡ PREMIUM DOWNLOADER\n"
-        "╚══════════════════╝\n\n"
-        "🎬 YouTube + TikTok supported\n"
-        "🚀 Ultra fast download\n"
-        "🗜 Auto compress enabled\n\n"
-        "🔗 Send your video link now!"
+        "▰▰▰▰▰▰▰▰▰▰\n"
+        "💜⚡ ADMIN RAHMAN 𝗕𝗢𝗧 ⚡💜\n"
+        "▰▰▰▰▰▰▰▰▰▰\n\n"
+        "🌌 𝗡𝗘𝗢𝗡 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗𝗘𝗥\n\n"
+        "🎬 YouTube + TikTok\n"
+        "🎧 MP3 Audio\n"
+        "🚀 Ultra Fast Mode\n"
+        "🗜 Auto Compress\n\n"
+        "📎 Paste your video link 👇"
     )
 
 # 🔍 LINK HANDLER
 async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+
     url = update.message.text.strip()
 
     if not ("youtube.com" in url or "youtu.be" in url or "tiktok.com" in url):
@@ -46,24 +51,24 @@ async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         title = data.get("title", "Video")
         thumbnail = data.get("thumbnail")
 
-        # 💎 PREMIUM BUTTON UI
+        # 💎 NEON BUTTON UI
         buttons = [
             [
-                InlineKeyboardButton("💎 1080p HD", callback_data="1080"),
-                InlineKeyboardButton("⚡ 720p Fast", callback_data="720")
+                InlineKeyboardButton("💜 1080p Neon", callback_data="1080"),
+                InlineKeyboardButton("⚡ 720p Turbo", callback_data="720")
             ],
             [
-                InlineKeyboardButton("📱 360p Lite", callback_data="360"),
-                InlineKeyboardButton("🎧 MP3 Audio", callback_data="mp3")
+                InlineKeyboardButton("🔮 360p Lite", callback_data="360"),
+                InlineKeyboardButton("🎧 MP3 Glow", callback_data="mp3")
             ]
         ]
 
         caption = (
-            "╭───────────────╮\n"
-            "   🎥 VIDEO READY\n"
-            "╰───────────────╯\n\n"
-            f"📌 {title}\n\n"
-            "👇 Choose quality:"
+            "▰▰▰▰▰▰▰▰▰▰\n"
+            "💜🎥 𝗩𝗜𝗗𝗘𝗢 𝗥𝗘𝗔𝗗𝗬 🎥💜\n"
+            "▰▰▰▰▰▰▰▰▰▰\n\n"
+            f"📌 𝗧𝗶𝘁𝗹𝗲: {title}\n\n"
+            "⚡ Choose quality below 👇"
         )
 
         await msg.delete()
@@ -87,6 +92,8 @@ async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+
+    await context.bot.send_chat_action(chat_id=query.message.chat_id, action=ChatAction.UPLOAD_VIDEO)
 
     url = context.user_data.get("url")
     choice = query.data
@@ -153,7 +160,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         os.remove(file_path)
         await msg.delete()
 
-    except Exception as e:
+    except:
         await msg.edit_text("❌ Download failed")
 
 # 🚀 RUN
@@ -164,7 +171,7 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, link_handler))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("🔥 Premium Bot Running...")
+    print("🔥 Neon Bot Running...")
     app.run_polling()
 
 if __name__ == "__main__":
