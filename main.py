@@ -7,16 +7,21 @@ BOT_TOKEN = os.getenv("8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0", "8659260
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🎬 YouTube + TikTok Downloader Bot\n\n"
-        "ভিডিও link পাঠাও।\n"
-        "Bot direct video send করবে ✅"
+        "🎬 *Video Downloader Bot*\n\n"
+        "📥 Send YouTube or TikTok video link.\n"
+        "⚡ I will download it for you.\n\n"
+        "✅ *Supported:*\n"
+        "• YouTube\n"
+        "• TikTok\n\n"
+        "🔗 Send your link now!",
+        parse_mode="Markdown"
     )
 
 async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text.strip()
 
     if not ("youtube.com" in url or "youtu.be" in url or "tiktok.com" in url):
-        await update.message.reply_text("❌ YouTube বা TikTok link পাঠাও")
+        await update.message.reply_text("❌ Valid YouTube/TikTok link পাঠাও")
         return
 
     msg = await update.message.reply_text("⏳ Download হচ্ছে...")
@@ -47,8 +52,10 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, download))
+
     print("✅ Bot running...")
     app.run_polling()
 
