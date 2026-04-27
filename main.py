@@ -5,6 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
 BOT_TOKEN = os.getenv("8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0", "8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0")
+CHANNEL_USERNAME = "@bangladeshkobor"   # এখানে তোমার channel username দাও
 
 FAST_OPTS = {
     "quiet": True,
@@ -15,10 +16,33 @@ FAST_OPTS = {
     "socket_timeout": 20,
 }
 
-def file_size_mb(path):
-    return round(os.path.getsize(path) / (1024 * 1024), 2)
+async def is_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    try:
+        member = await context.bot.get_chat_member(CHANNEL_USERNAME, user_id)
+        return member.status in ["member", "administrator", "creator"]
+    except:
+        return False
+
+async def force_join_msg(update: Update):
+    buttons = [
+        [InlineKeyboardButton("💜 Join Channel", url=f"https://t.me/{CHANNEL_USERNAME.replace('@','')}")],
+        [InlineKeyboardButton("✅ I Joined", callback_data="check_join")]
+    ]
+
+    await update.message.reply_text(
+        "╭━━━〔 🔒 JOIN REQUIRED 〕━━━╮\n"
+        "┃ Bot use করতে আগে channel join করো\n"
+        "┃ তারপর ✅ I Joined চাপো\n"
+        "╰━━━━━━━━━━━━━━━━━━━━╯",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await is_joined(update, context):
+        await force_join_msg(update)
+        return
+
     msg = await update.message.reply_text("💜 Initializing...")
 
     for t in ["💜 Initializing.", "💜 Initializing..", "💜 Initializing..."]:
@@ -37,7 +61,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "💜 Send your video link 👇"
     )
 
+async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "╭━━━〔 💜 HELP MENU 〕━━━╮\n"
+        "┃ 1. YouTube/TikTok link পাঠাও\n"
+        "┃ 2. Quality select করো\n"
+        "┃ 3. Video/MP3 পেয়ে যাবে\n"
+        "╰━━━━━━━━━━━━━━━━━━━━╯"
+    )
+
+async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "╭━━━〔 ℹ️ ABOUT 〕━━━╮\n"
+        "┃ 💜 RAHMAN NEON DOWNLOADER\n"
+        "┃ 🎬 Video + 🎧 Audio Downloader\n"
+        "┃ 👤 Admin: @ABDUR9X\n"
+        "╰━━━━━━━━━━━━━━━━━━━━╯"
+    )
+
 async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await is_joined(update, context):
+        await force_join_msg(update)
+        return
+
     url = update.message.text.strip()
 
     if not ("youtube.com" in url or "youtu.be" in url or "tiktok.com" in url):
@@ -103,6 +149,20 @@ async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
+
+    if q.data == "check_join":
+        if await is_joined(update, context):
+            await q.message.edit_text(
+                "✅ Joined successfully!\n\n"
+                "Now send your YouTube/TikTok link 💜"
+            )
+        else:
+            await q.message.reply_text("❌ এখনো channel join করোনি")
+        return
+
+    if not await is_joined(update, context):
+        await q.message.reply_text("🔒 আগে channel join করো")
+        return
 
     url = context.user_data.get("url")
     title = context.user_data.get("title", "Your file")
@@ -171,7 +231,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if choice == "mp3":
             file = file.replace(".webm", ".mp3").replace(".m4a", ".mp3")
 
-        size = file_size_mb(file)
+        size = round(os.path.getsize(file) / (1024 * 1024), 2)
 
         await msg.edit_text(
             "╭━━━〔 📤 SENDING 〕━━━╮\n"
@@ -215,10 +275,15 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_cmd))
+    app.add_handler(CommandHandler("about", about))
+
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, link_handler))
     app.add_handler(CallbackQueryHandler(button_handler))
-    print("💜 Neon Bot Running...")
+
+    print("💜 Force Join Bot Running...")
     app.run_polling()
 
 if __name__ == "__main__":
