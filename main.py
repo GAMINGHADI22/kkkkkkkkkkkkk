@@ -5,6 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
 BOT_TOKEN = os.getenv("8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0", "8659260396:AAFAN2zmbfgTmZE-oVEQV0eWWw8HugxCEa0")
+
 FAST_OPTS = {
     "quiet": True,
     "no_warnings": True,
@@ -13,6 +14,9 @@ FAST_OPTS = {
     "fragment_retries": 10,
     "socket_timeout": 20,
 }
+
+def file_size_mb(path):
+    return round(os.path.getsize(path) / (1024 * 1024), 2)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = await update.message.reply_text("💜 Initializing...")
@@ -23,12 +27,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await msg.edit_text(
         "╔══════════════════════════════╗\n"
-        "║ 💜✨ 𝗔𝗗𝗠𝗜𝗡 𝗥𝗔𝗛𝗠𝗔𝗡 𝗕𝗢𝗧 ✨💜 ║\n"
+        "║ 💜✨ ADMIN RAHMAN BOT ✨💜 ║\n"
         "╠══════════════════════════════╣\n"
-        "║ 🌌 𝗡𝗘𝗢𝗡 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗𝗘𝗥        ║\n"
-        "║ 🎬 YouTube • TikTok         ║\n"
-        "║ 🎧 MP3 • HD Video          ║\n"
-        "║ 🚀 Ultra Fast Engine       ║\n"
+        "║ 🌌 NEON VIDEO DOWNLOADER     ║\n"
+        "║ 🎬 YouTube • TikTok          ║\n"
+        "║ 🎧 MP3 • HD Video            ║\n"
+        "║ 🚀 Ultra Fast Engine         ║\n"
         "╚══════════════════════════════╝\n\n"
         "💜 Send your video link 👇"
     )
@@ -55,6 +59,8 @@ async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         duration = data.get("duration", 0)
         thumbnail = data.get("thumbnail")
 
+        context.user_data["title"] = title
+
         m = duration // 60
         s = duration % 60
 
@@ -70,9 +76,9 @@ async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
 
         caption = (
-            "╭━━━━〔 💜 𝗡𝗘𝗢𝗡 𝗣𝗥𝗘𝗩𝗜𝗘𝗪 💜 〕━━━━╮\n"
-            f"🎬 {title[:40]}\n"
-            f"⏱ {m}:{s:02d}\n"
+            "╭━━━━〔 💜 NEON PREVIEW 💜 〕━━━━╮\n"
+            f"🎬 {title[:45]}\n"
+            f"⏱ Duration: {m}:{s:02d}\n"
             "╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n"
             "⚡ Choose format 👇"
         )
@@ -92,14 +98,22 @@ async def link_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
     except Exception as e:
-        await msg.edit_text("❌ Failed to load preview\n\n" + str(e)[:150])
+        await msg.edit_text("❌ Preview failed\n\n" + str(e)[:150])
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
 
     url = context.user_data.get("url")
+    title = context.user_data.get("title", "Your file")
     choice = q.data
+
+    quality_name = {
+        "1080": "1080p HD",
+        "720": "720p HD",
+        "360": "360p Lite",
+        "mp3": "MP3 Audio"
+    }.get(choice, "Video")
 
     msg = await q.message.reply_text("🚀 Starting download...")
 
@@ -145,32 +159,38 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             data = ydl.extract_info(url, download=True)
             file = ydl.prepare_filename(data)
 
-    await msg.edit_text(
-    "╭━━━〔 🔊 𝗣𝗥𝗘𝗣𝗔𝗥𝗜𝗡𝗚 〕━━━╮\n"
-    "┃ ▰▰▰▰▱▱▱▱▱▱ 40%\n"
-    "┃ 🎶 Encoding media...\n"
-    "┃ ⚡ Finalizing file...\n"
-    "╰━━━━━━━━━━━━━━━━━━━━╯"
-)
-await asyncio.sleep(1)
+        await msg.edit_text(
+            "╭━━━〔 🔊 PREPARING 〕━━━╮\n"
+            "┃ ▰▰▰▰▱▱▱▱▱▱ 40%\n"
+            "┃ 🎶 Encoding media...\n"
+            "┃ ⚡ Finalizing file...\n"
+            "╰━━━━━━━━━━━━━━━━━━━━╯"
+        )
+        await asyncio.sleep(1)
 
-await msg.edit_text(
-    "╭━━━〔 📤 𝗦𝗘𝗡𝗗𝗜𝗡𝗚 〕━━━╮\n"
-    "┃ ▰▰▰▰▰▰▰▰▱▱ 80%\n"
-    "┃ 💜 Uploading to Telegram...\n"
-    "┃ ⏳ Please wait...\n"
-    "╰━━━━━━━━━━━━━━━━━━━━╯"
-)
         if choice == "mp3":
             file = file.replace(".webm", ".mp3").replace(".m4a", ".mp3")
+
+        size = file_size_mb(file)
+
+        await msg.edit_text(
+            "╭━━━〔 📤 SENDING 〕━━━╮\n"
+            "┃ ▰▰▰▰▰▰▰▰▱▱ 80%\n"
+            "┃ 💜 Uploading to Telegram...\n"
+            "┃ ⏳ Please wait...\n"
+            "╰━━━━━━━━━━━━━━━━━━━━╯"
+        )
+
+        if choice == "mp3":
             with open(file, "rb") as f:
                 await q.message.reply_audio(
                     audio=f,
                     caption=(
-                        "╭━━━〔 🎧 𝗔𝗨𝗗𝗜𝗢 𝗥𝗘𝗔𝗗𝗬 〕━━━╮\n"
-                        "┃ 💜 Powered by ADMIN RAHMAN BOT\n"
-                        "┃ 🎵 Your MP3 is ready\n"
-                        "╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯"
+                        "╭━━━〔 🎧 AUDIO READY 〕━━━╮\n"
+                        f"┃ 🎵 Title: {title[:25]}\n"
+                        f"┃ 💾 Size: {size} MB\n"
+                        "┃ 💜 ADMIN RAHMAN BOT\n"
+                        "╰━━━━━━━━━━━━━━━━━━━━╯"
                     )
                 )
         else:
@@ -178,10 +198,12 @@ await msg.edit_text(
                 await q.message.reply_video(
                     video=f,
                     caption=(
-                        "╭━━━〔 ✅ 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗 𝗖𝗢𝗠𝗣𝗟𝗘𝗧𝗘 〕━━━╮\n"
-                        "┃ 💜 Powered by ADMIN RAHMAN BOT\n"
-                        "┃ 🎬 Your video is ready\n"
-                        "╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯"
+                        "╭━━━〔 ✅ DOWNLOAD COMPLETE 〕━━━╮\n"
+                        f"┃ 🎬 Title: {title[:25]}\n"
+                        f"┃ 📺 Quality: {quality_name}\n"
+                        f"┃ 💾 Size: {size} MB\n"
+                        "┃ 💜 ADMIN RAHMAN BOT\n"
+                        "╰━━━━━━━━━━━━━━━━━━━━╯"
                     )
                 )
 
@@ -196,7 +218,6 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, link_handler))
     app.add_handler(CallbackQueryHandler(button_handler))
-
     print("💜 Neon Bot Running...")
     app.run_polling()
 
