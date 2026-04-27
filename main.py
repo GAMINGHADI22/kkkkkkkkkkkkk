@@ -145,18 +145,22 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             data = ydl.extract_info(url, download=True)
             file = ydl.prepare_filename(data)
 
-        await msg.edit_text(
-            "🔊 Preparing file...\n"
-            "🎶 Encoding...\n"
-            "⚡ Finalizing..."
-        )
-        await asyncio.sleep(1)
+    await msg.edit_text(
+    "╭━━━〔 🔊 𝗣𝗥𝗘𝗣𝗔𝗥𝗜𝗡𝗚 〕━━━╮\n"
+    "┃ ▰▰▰▰▱▱▱▱▱▱ 40%\n"
+    "┃ 🎶 Encoding media...\n"
+    "┃ ⚡ Finalizing file...\n"
+    "╰━━━━━━━━━━━━━━━━━━━━╯"
+)
+await asyncio.sleep(1)
 
-        await msg.edit_text(
-            "📤 Sending...\n"
-            "💜 Please wait..."
-        )
-
+await msg.edit_text(
+    "╭━━━〔 📤 𝗦𝗘𝗡𝗗𝗜𝗡𝗚 〕━━━╮\n"
+    "┃ ▰▰▰▰▰▰▰▰▱▱ 80%\n"
+    "┃ 💜 Uploading to Telegram...\n"
+    "┃ ⏳ Please wait...\n"
+    "╰━━━━━━━━━━━━━━━━━━━━╯"
+)
         if choice == "mp3":
             file = file.replace(".webm", ".mp3").replace(".m4a", ".mp3")
             with open(file, "rb") as f:
